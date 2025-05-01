@@ -4,33 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تقسیم نقش‌ها - محرمانه</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body {
             font-family: Tahoma, sans-serif;
             direction: rtl;
             background-color: #f9f9f9;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .controls {
-            margin-bottom: 20px;
-        }
-        .container {
-            display: grid;
-            grid-template-columns: repeat(4, 100px);
-            gap: 10px;
-        }
-        .button {
-            width: 100px;
-            height: 50px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
         }
         .button.used {
             background-color: #6c757d;
@@ -40,53 +21,53 @@
             margin-top: 20px;
             display: none;
         }
-        #godView {
-            margin-top: 30px;
-            text-align: right;
-        }
         #godButton {
             margin-top: 100px;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
         }
         #timerSection {
             margin-top: 40px;
-            text-align: center;
         }
         .timerBox {
-            margin: 20px;
+            margin: 30px 0;
         }
         .timerDisplay {
             font-size: 24px;
             font-weight: bold;
             margin: 10px 0;
         }
+        #buttonContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 20px;
+            justify-items: center;
+        }
     </style>
 </head>
-<body>
+<body class="container text-center">
 <audio id="alarmSound" src="alarm.mp3" preload="auto"></audio>
 
-<div class="controls">
-    <label for="playerCount">تعداد بازیکنان (۷ تا ۱۳): </label>
-    <input type="number" id="playerCount" min="7" max="13" value="10">
-    <button onclick="startGame()">شروع بازی</button>
+<div class="controls mb-4">
+    <label for="playerCount" class="form-label">تعداد بازیکنان (۷ تا ۱۳):</label>
+    <input type="number" id="playerCount" class="form-control w-25 d-inline" min="7" max="13" value="10">
+    <button class="btn btn-primary ms-2" onclick="startGame()"><i class="bi bi-shuffle"></i> شروع بازی</button>
 </div>
-<div class="container" id="buttonContainer"></div>
 
-<div id="roleDisplay">
+<div class="container d-grid gap-3 justify-content-center" style="grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));" id="buttonContainer"></div>
+
+<div id="roleDisplay" class="mt-4">
     <p><strong>نقش:</strong> <span id="shownRole"></span></p>
-    <label>نام بازیکن: <input type="text" id="playerName" onkeydown="handleEnter(event)"></label>
-    <button onclick="confirmPlayer()">تأیید</button>
+    <div class="input-group mb-3 w-50 mx-auto">
+        <span class="input-group-text">نام بازیکن</span>
+        <input type="text" id="playerName" class="form-control" onkeydown="handleEnter(event)">
+    </div>
+    <button class="btn btn-success" onclick="confirmPlayer()">
+        <i class="bi bi-check-circle"></i> تأیید
+    </button>
 </div>
 
-<div style="height: 150px;"></div>
-<button id="godButton" onclick="showGodView()">📜 نمایش لیست نقش‌ها برای گرداننده</button>
-<div id="godView"></div>
+<div style="height: 100px;"></div>
+<button id="godButton" class="btn btn-danger" onclick="showGodView()"><i class="bi bi-list-ul"></i> نمایش لیست نقش‌ها برای گرداننده</button>
+<div id="godView" class="mt-4 text-end"></div>
 
 <div id="timerSection">
     <h3>⏳ تایمر بازی</h3>
@@ -94,23 +75,30 @@
     <div class="timerBox">
         <h4>تایمر صحبت (۶۰ ثانیه)</h4>
         <div id="talkTimer" class="timerDisplay">--:--</div>
-        <button onclick="startTimer('talk', 60)">شروع</button>
-        <button onclick="stopTimer('talk')">⏹ توقف</button>
+        <button class="btn btn-success me-2" onclick="startTimer('talk', 60)"><i class="bi bi-play-fill"></i> شروع</button>
+        <button class="btn btn-danger" onclick="stopTimer('talk')"><i class="bi bi-stop-fill"></i> توقف</button>
     </div>
 
     <div class="timerBox">
         <h4>تایمر چالش / رأی‌گیری (۳۰ ثانیه)</h4>
         <div id="challengeTimer" class="timerDisplay">--:--</div>
-        <button onclick="startTimer('challenge', 30)">شروع</button>
-        <button onclick="stopTimer('challenge')">⏹ توقف</button>
+        <button class="btn btn-success me-2" onclick="startTimer('challenge', 30)"><i class="bi bi-play-fill"></i> شروع</button>
+        <button class="btn btn-danger" onclick="stopTimer('challenge')"><i class="bi bi-stop-fill"></i> توقف</button>
+    </div>
+
+    <div class="timerBox">
+        <h4>تایمر آزمایشی (۵ ثانیه)</h4>
+        <div id="testTimer" class="timerDisplay">--:--</div>
+        <button class="btn btn-success me-2" onclick="startTimer('test', 5)"><i class="bi bi-play-fill"></i> شروع</button>
+        <button class="btn btn-danger" onclick="stopTimer('test')"><i class="bi bi-stop-fill"></i> توقف</button>
     </div>
 </div>
 
 <script>
     const rolesByCount = {
-        7:  ["رئیس مافیا", "مافیای ساده", "پزشک", "کارآگاه", "شهروند ساده", "شهروند ساده", "شهروند ساده"],
-        8:  ["رئیس مافیا", "مذاکره‌گر مافیا", "پزشک", "کارآگاه", "خبرنگار", "شهروند ساده", "شهروند ساده", "شهروند ساده"],
-        9:  ["رئیس مافیا", "مذاکره‌گر مافیا", "مافیای ساده", "پزشک", "کارآگاه", "خبرنگار", "شهروند ساده", "شهروند ساده", "شهروند ساده"],
+        7: ["رئیس مافیا", "مافیای ساده", "پزشک", "کارآگاه", "شهروند ساده", "شهروند ساده", "شهروند ساده"],
+        8: ["رئیس مافیا", "مذاکره‌گر مافیا", "پزشک", "کارآگاه", "خبرنگار", "شهروند ساده", "شهروند ساده", "شهروند ساده"],
+        9: ["رئیس مافیا", "مذاکره‌گر مافیا", "مافیای ساده", "پزشک", "کارآگاه", "خبرنگار", "شهروند ساده", "شهروند ساده", "شهروند ساده"],
         10: ["رئیس مافیا", "مذاکره‌گر مافیا", "مافیای ساده", "پزشک", "کارآگاه", "خبرنگار", "تک‌تیرانداز", "زره‌پوش", "شهروند ساده", "شهروند ساده"],
         11: ["رئیس مافیا", "مذاکره‌گر مافیا", "مافیای ساده", "مافیای ساده", "پزشک", "کارآگاه", "خبرنگار", "تک‌تیرانداز", "زره‌پوش", "شهروند ساده", "شهروند ساده"],
         12: ["رئیس مافیا", "مذاکره‌گر مافیا", "مافیای ساده", "مافیای ساده", "پزشک", "کارآگاه", "خبرنگار", "تک‌تیرانداز", "زره‌پوش", "شهروند ساده", "شهروند ساده", "شهروند ساده"],
@@ -142,7 +130,7 @@
         assignments.length = 0;
         for (let i = 0; i < count; i++) {
             const btn = document.createElement("button");
-            btn.className = "button";
+            btn.className = "btn btn-outline-primary btn-lg fw-bold fs-4";
             btn.textContent = i + 1;
             btn.onclick = () => handleClick(i, btn);
             container.appendChild(btn);
@@ -153,7 +141,8 @@
         if (btn.classList.contains("used")) return;
         currentIndex = index;
         btn.classList.add("used");
-        btn.textContent = "?";
+        btn.disabled = true;
+        btn.textContent = "❓";
         document.getElementById("shownRole").textContent = currentRoles[index];
         document.getElementById("playerName").value = "";
         document.getElementById("roleDisplay").style.display = "block";
