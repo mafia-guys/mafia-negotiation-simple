@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقسیم نقش‌ها - محرمانه</title>
+    <style>
+        body {
+            font-family: Tahoma, sans-serif;
+            direction: rtl;
+            background-color: #f9f9f9;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            gap: 10px;
+        }
+        .button {
+            width: 100px;
+            height: 50px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .button.used {
+            background-color: #6c757d;
+            cursor: default;
+        }
+        #roleDisplay {
+            margin-top: 20px;
+            display: none;
+        }
+        #godView {
+            margin-top: 30px;
+            text-align: right;
+        }
+        #godButton {
+            margin-top: 100px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #timerSection {
+            margin-top: 40px;
+            text-align: center;
+        }
+        #timerDisplay {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="controls">
+    <label for="playerCount">تعداد بازیکنان (۷ تا ۱۳): </label>
+    <input type="number" id="playerCount" min="7" max="13" value="10">
+    <button onclick="startGame()">شروع بازی</button>
+</div>
+<div class="container" id="buttonContainer"></div>
+
+<div id="roleDisplay">
+    <p><strong>نقش:</strong> <span id="shownRole"></span></p>
+    <label>نام بازیکن: <input type="text" id="playerName" onkeydown="handleEnter(event)"></label>
+    <button onclick="confirmPlayer()">تأیید</button>
+</div>
+
+<div style="height: 150px;"></div>
+<button id="godButton" onclick="showGodView()">📜 نمایش لیست نقش‌ها برای گرداننده</button>
+<div id="godView"></div>
+
+<div id="timerSection">
+    <h3>⏳ تایمر بازی</h3>
+    <div id="timerDisplay">--:--</div>
+    <button onclick="startTimer(5)">شروع ۵ دقیقه‌ای</button>
+    <button onclick="startTimer(10)">شروع ۱۰ دقیقه‌ای</button>
+    <button onclick="stopTimer()">⏹ توقف</button>
+</div>
+
+<script>
+    const rolesByCount = {
+        7:  ["رئیس مافیا", "مافیای ساده", "پزشک", "کارآگاه", "شهروند ساده", "شهروند ساده", "شهروند ساده"],
+        8:  ["رئیس مافیا", "مذاکره‌گر مافیا", "پزشک", "کارآگاه", "خبرنگار", "شهروند ساده", "شهروند ساده", "شهروند ساده"],
+        9:  ["رئیس مافیا", "مذاکره‌گر مافیا", "مافیای ساده", "پزشک", "کارآگاه", "خبرنگار", "شهروند ساده", "شهروند ساده", "شهروند ساده"],
+        10: ["رئیس مافیا", "مذاکره‌گر مافیا", "مافیای ساده", "پزشک", "کارآگاه", "خبرنگار", "تک‌تیرانداز", "زره‌پوش", "شهروند ساده", "شهروند ساده"],
+        11: ["رئیس مافیا", "مذاکره‌گر مافیا", "مافیای ساده", "مافیای ساده", "پزشک", "کارآگاه", "خبرنگار", "تک‌تیرانداز", "زره‌پوش", "شهروند ساده", "شهروند ساده"],
+        12: ["رئیس مافیا", "مذاکره‌گر مافیا", "مافیای ساده", "مافیای ساده", "پزشک", "کارآگاه", "خبرنگار", "تک‌تیرانداز", "زره‌پوش", "شهروند ساده", "شهروند ساده", "شهروند ساده"],
+        13: ["رئیس مافیا", "مذاکره‌گر مافیا", "مافیای ساده", "مافیای ساده", "مافیای ساده", "پزشک", "کارآگاه", "خبرنگار", "تک‌تیرانداز", "زره‌پوش", "شهروند ساده", "شهروند ساده", "شهروند ساده"]
+    };
+
+    let currentRoles = [];
+    let currentIndex = -1;
+    const assignments = [];
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function startGame() {
+        const count = parseInt(document.getElementById("playerCount").value);
+        if (count < 7 || count > 13) {
+            alert("عدد باید بین ۷ تا ۱۳ باشد.");
+            return;
+        }
+
+        currentRoles = [...rolesByCount[count]];
+        shuffle(currentRoles);
+        const container = document.getElementById("buttonContainer");
+        container.innerHTML = "";
+        assignments.length = 0;
+
+        for (let i = 0; i < count; i++) {
+            const btn = document.createElement("button");
+            btn.className = "button";
+            btn.textContent = i + 1;
+            btn.onclick = () => handleClick(i, btn);
+            container.appendChild(btn);
+        }
+    }
+
+    function handleClick(index, btn) {
+        if (btn.classList.contains("used")) return;
+        currentIndex = index;
+        btn.classList.add("used");
+        btn.textContent = "?";
+        document.getElementById("shownRole").textContent = currentRoles[index];
+        document.getElementById("playerName").value = "";
+        document.getElementById("roleDisplay").style.display = "block";
+        document.getElementById("playerName").focus();
+    }
+
+    function handleEnter(event) {
+        if (event.key === "Enter") {
+            confirmPlayer();
+        }
+    }
+
+    function confirmPlayer() {
+        const name = document.getElementById("playerName").value.trim();
+        if (!name) return alert("لطفاً نام بازیکن را وارد کنید.");
+        assignments[currentIndex] = { name, role: currentRoles[currentIndex] };
+        document.getElementById("roleDisplay").style.display = "none";
+    }
+
+    function showGodView() {
+        let html = '<h3>📋 لیست نهایی نقش‌ها:</h3><ul>';
+        assignments.forEach((entry, i) => {
+            if (entry) {
+                html += `<li>${entry.name}: ${entry.role}</li>`;
+            } else {
+                html += `<li>بازیکن ${i + 1}: مشخص نشده</li>`;
+            }
+        });
+        html += '</ul>';
+        document.getElementById("godView").innerHTML = html;
+    }
+
+    let timerInterval;
+
+    function startTimer(minutes) {
+        clearInterval(timerInterval);
+        let time = minutes * 60;
+        const display = document.getElementById("timerDisplay");
+
+        timerInterval = setInterval(() => {
+            const min = Math.floor(time / 60);
+            const sec = time % 60;
+            display.textContent = `${min}:${sec < 10 ? '0' : ''}${sec}`;
+            time--;
+            if (time < 0) {
+                clearInterval(timerInterval);
+                display.textContent = "⏰ زمان تمام شد!";
+            }
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        document.getElementById("timerDisplay").textContent = "--:--";
+    }
+</script>
+</body>
+</html>
