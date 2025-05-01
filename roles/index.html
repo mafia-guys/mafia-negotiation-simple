@@ -58,7 +58,10 @@
             margin-top: 40px;
             text-align: center;
         }
-        #timerDisplay {
+        .timerBox {
+            margin: 20px;
+        }
+        .timerDisplay {
             font-size: 24px;
             font-weight: bold;
             margin: 10px 0;
@@ -66,6 +69,8 @@
     </style>
 </head>
 <body>
+<audio id="alarmSound" src="alarm.mp3" preload="auto"></audio>
+
 <div class="controls">
     <label for="playerCount">تعداد بازیکنان (۷ تا ۱۳): </label>
     <input type="number" id="playerCount" min="7" max="13" value="10">
@@ -85,10 +90,27 @@
 
 <div id="timerSection">
     <h3>⏳ تایمر بازی</h3>
-    <div id="timerDisplay">--:--</div>
-    <button onclick="startTimer(5)">شروع ۵ دقیقه‌ای</button>
-    <button onclick="startTimer(10)">شروع ۱۰ دقیقه‌ای</button>
-    <button onclick="stopTimer()">⏹ توقف</button>
+
+    <div class="timerBox">
+        <h4>تایمر صحبت (۶۰ ثانیه)</h4>
+        <div id="talkTimer" class="timerDisplay">--:--</div>
+        <button onclick="startTimer('talk', 60)">شروع</button>
+        <button onclick="stopTimer('talk')">⏹ توقف</button>
+    </div>
+
+    <div class="timerBox">
+        <h4>تایمر چالش / رأی‌گیری (۳۰ ثانیه)</h4>
+        <div id="challengeTimer" class="timerDisplay">--:--</div>
+        <button onclick="startTimer('challenge', 30)">شروع</button>
+        <button onclick="stopTimer('challenge')">⏹ توقف</button>
+    </div>
+
+    <div class="timerBox">
+        <h4>تایمر آزمایشی (۵ ثانیه)</h4>
+        <div id="testTimer" class="timerDisplay">--:--</div>
+        <button onclick="startTimer('test', 5)">شروع</button>
+        <button onclick="stopTimer('test')">⏹ توقف</button>
+    </div>
 </div>
 
 <script>
@@ -105,6 +127,7 @@
     let currentRoles = [];
     let currentIndex = -1;
     const assignments = [];
+    const timers = { talk: null, challenge: null, test: null };
 
     function shuffle(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -119,13 +142,11 @@
             alert("عدد باید بین ۷ تا ۱۳ باشد.");
             return;
         }
-
         currentRoles = [...rolesByCount[count]];
         shuffle(currentRoles);
         const container = document.getElementById("buttonContainer");
         container.innerHTML = "";
         assignments.length = 0;
-
         for (let i = 0; i < count; i++) {
             const btn = document.createElement("button");
             btn.className = "button";
@@ -147,9 +168,7 @@
     }
 
     function handleEnter(event) {
-        if (event.key === "Enter") {
-            confirmPlayer();
-        }
+        if (event.key === "Enter") confirmPlayer();
     }
 
     function confirmPlayer() {
@@ -162,38 +181,41 @@
     function showGodView() {
         let html = '<h3>📋 لیست نهایی نقش‌ها:</h3><ul>';
         assignments.forEach((entry, i) => {
-            if (entry) {
-                html += `<li>${entry.name}: ${entry.role}</li>`;
-            } else {
-                html += `<li>بازیکن ${i + 1}: مشخص نشده</li>`;
-            }
+            html += entry ? `<li>${entry.name}: ${entry.role}</li>` : `<li>بازیکن ${i + 1}: مشخص نشده</li>`;
         });
         html += '</ul>';
         document.getElementById("godView").innerHTML = html;
     }
 
-    let timerInterval;
+    function playAlarm() {
+        const sound = document.getElementById("alarmSound");
+        if (sound) {
+            sound.pause();
+            sound.currentTime = 0;
+            sound.play().catch(e => console.warn("Audio play failed:", e));
+        }
+    }
 
-    function startTimer(minutes) {
-        clearInterval(timerInterval);
-        let time = minutes * 60;
-        const display = document.getElementById("timerDisplay");
-
-        timerInterval = setInterval(() => {
+    function startTimer(type, seconds) {
+        clearInterval(timers[type]);
+        let time = seconds;
+        const display = document.getElementById(type + "Timer");
+        timers[type] = setInterval(() => {
             const min = Math.floor(time / 60);
             const sec = time % 60;
             display.textContent = `${min}:${sec < 10 ? '0' : ''}${sec}`;
             time--;
             if (time < 0) {
-                clearInterval(timerInterval);
+                clearInterval(timers[type]);
                 display.textContent = "⏰ زمان تمام شد!";
+                playAlarm();
             }
         }, 1000);
     }
 
-    function stopTimer() {
-        clearInterval(timerInterval);
-        document.getElementById("timerDisplay").textContent = "--:--";
+    function stopTimer(type) {
+        clearInterval(timers[type]);
+        document.getElementById(type + "Timer").textContent = "--:--";
     }
 </script>
 </body>
